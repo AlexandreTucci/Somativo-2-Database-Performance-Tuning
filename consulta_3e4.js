@@ -2,17 +2,20 @@ use('Somativa');
 
 async function criarPedido() {
     try {
-        // Verificar estoque antes
-        const produto = db.products.findOne(
-            { name: 'Smartphone X100' }
-        );
-        print(produto)
+    
+        const requestedQuantity = 3;
 
-        if (produto.quantity < 2) {
-            throw new Error("estoque insuficiente");
-        }
-        if(!produto){
+        // Verificar produto e estoque antes
+        const produto = await db.products.findOne(
+            { _id: ObjectId('690a92fc74fa9727781cec3c') }
+        );
+
+        if (!produto) {
             throw new Error("Produto não encontrado");
+        }
+
+        if (produto.quantity < requestedQuantity) {
+            throw new Error("estoque insuficiente");
         }
 
         // Dados da compra
@@ -21,11 +24,16 @@ async function criarPedido() {
             products: [
                 {
                     productId: produto._id,
-                    quantity: 2,
-                    price: 99.90
+                    quantity: requestedQuantity,
+                    price: produto.price
                 }
             ],
-            total: 199.80,
+            total: calcular_total([
+                {
+                    quantity: requestedQuantity,
+                    price: produto.price
+                }
+            ]),
             status: "pending",
             createdAt: new Date(),
             shippingAddress: {
@@ -43,7 +51,7 @@ async function criarPedido() {
         // Atualizar o estoque
         const atualizacaoEstoque = await db.products.updateOne(
             { _id: produto._id },
-            { $inc: { quantity: -2 } }
+            { $inc: { quantity: -requestedQuantity } }
         );
 
         print("Pedido criado com sucesso!");
@@ -55,5 +63,9 @@ async function criarPedido() {
     }
 }
 
-// Executar a função
+// Função que calcula o total somando price * quantity para cada item
+function calcular_total(items) {
+    return items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
+}
+
 criarPedido();

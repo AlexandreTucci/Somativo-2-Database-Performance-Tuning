@@ -1,5 +1,5 @@
 // Seleciona o banco de dados
-use('Somativa2DBT');
+use('Somativa');
 
 const product = db.products.findOne({
     name: 'Smartphone X100'
