@@ -10,7 +10,7 @@
 // https://www.mongodb.com/docs/mongodb-vscode/playgrounds/
 
 // Select the database to use.
-use('Somativa2DBT');
+use('Somativa');
 
 // --- 1. Users
 db.createCollection("users", {
