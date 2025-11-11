@@ -1,39 +1,40 @@
-// Atualizar o esquema da coleção de products para incluir promoções temporárias
-// Cada produto pode ter um campo "promocao" com as informações da promoção
-
-// Exemplo de estrutura do campo "promocao":
-// {
-//   desconto: 20, // desconto em porcentagem
-//   inicio: new Date("2025-11-01"), // data de início da promoção
-//   fim: new Date("2025-11-30") // data de término da promoção
-// }
 
 use('Somativa');
 
-// Adicionar uma promoção a um produto específico
-db.products.updateOne(
-  { _id: ObjectId("690c95b16892e8bfe7917bf6") }, // Substitua pelo ID do produto
-  {
-    $set: {
-      promotions: {
-        type: "discount",
-        value: 20.0,
-        inicio: new Date("2025-11-01"),
-        fim: new Date("2025-11-30")
-      }
-    }
-  }
-);
 
-// Consultar products com promoções ativas
-const hoje = new Date();
-db.products.find({
-  "promotions.inicio": { $lte: hoje },
-  "promotions.fim": { $gte: hoje }
+// Adicionar pontos de fidelidade ao realizar uma compra
+db.orders.insertOne({
+  buyerId: ObjectId("ID_DO_USUARIO"), // Substitua pelo ID do usuário
+  items: [
+    { productId: ObjectId("ID_DO_PRODUTO"), price: 100, quantity: 2 }
+  ],
+  total: 200, // Valor total da compra
+  loyaltyPointsEarned: Math.floor(200 / 10), // Exemplo: 1 ponto a cada 10 unidades monetárias
+  loyaltyPointsUsed: 0, // Pontos usados nesta compra
+  date: new Date(),
+  status: "completed"
 });
 
-// Remover uma promoção após o término
-db.products.updateMany(
-  { "promotions.fim": { $lt: hoje } },
-  { $unset: { promotions: "" } }
+db.users.updateOne(
+  { _id: ObjectId("ID_DO_USUARIO") },
+  { $inc: { loyaltyPoints: Math.floor(200 / 10) } } // Incrementa os pontos do usuário
+);
+
+// Usar pontos de fidelidade como desconto em uma compra
+const pontosUsados = 50; // Exemplo: o usuário quer usar 50 pontos
+db.orders.insertOne({
+  buyerId: ObjectId("ID_DO_USUARIO"),
+  items: [
+    { productId: ObjectId("ID_DO_PRODUTO"), price: 100, quantity: 2 }
+  ],
+  total: 200 - pontosUsados, // Aplica o desconto dos pontos
+  loyaltyPointsEarned: Math.floor((200 - pontosUsados) / 10),
+  loyaltyPointsUsed: pontosUsados,
+  date: new Date(),
+  status: "completed"
+});
+
+db.users.updateOne(
+  { _id: ObjectId("ID_DO_USUARIO") },
+  { $inc: { loyaltyPoints: -pontosUsados + Math.floor((200 - pontosUsados) / 10) } } // Deduz os pontos usados e adiciona os novos pontos ganhos
 );
