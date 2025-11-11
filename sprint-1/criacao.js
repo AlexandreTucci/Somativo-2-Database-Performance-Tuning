@@ -48,7 +48,19 @@ db.createCollection("products", {
         location:{bsonType:"object", properties:{ type: {enum:["Point"]}, coordinates:{bsonType:"array"}}},
         categoryId:{bsonType:"objectId"},
         sellerId:{bsonType:"objectId"},
-        promotions:{bsonType:"array"}
+        promotions: {
+          bsonType: "array",
+          items: {
+            bsonType: "object",
+            required: ["type", "value", "inicio", "fim"],
+            properties: {
+              type: { bsonType: "string" }, // Tipo de promoção (ex: "discount")
+              value: { bsonType: "double" }, // Valor do desconto
+              inicio: { bsonType: "date" }, // Data de início da promoção
+              fim: { bsonType: "date" } // Data de término da promoção
+            }
+          }
+        }
       }
     }
   }
@@ -108,6 +120,7 @@ db.products.createIndex({ sellerId: 1 }); // relatórios por vendedor
 db.products.createIndex({ price: 1 }); // ordenações por preço
 db.products.createIndex({ name: "text", description: "text" }); // busca por texto (nome/descrição)
 db.products.createIndex({ location: "2dsphere" }); // buscas geoespaciais
+db.products.createIndex({ "promotions.inicio": 1, "promotions.fim": 1 }); // índice para promoções ativas
 
 // Reviews
 db.reviews.createIndex({ productId: 1, rating: -1 }); // buscar avaliações de um produto ordenadas por rating
