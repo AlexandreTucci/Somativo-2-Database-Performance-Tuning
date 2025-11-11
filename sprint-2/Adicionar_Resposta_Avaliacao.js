@@ -1,8 +1,13 @@
 function adicionarRespostaAvaliacao(reviewId, textoResposta) {
   try {
+      const productId = db.reviews.findOne({
+        reviewId: ObjectId(reviewId)
+      });
+      print(productId)
+      return;
       const sellerId = db.product.findOne({
         
-      })
+      });
 
     const resultado = db.reviews.updateOne(
       { _id: ObjectId(reviewId) },
@@ -30,3 +35,5 @@ function adicionarRespostaAvaliacao(reviewId, textoResposta) {
     return false;
   }
 }
+
+adicionarRespostaAvaliacao('690c95b16892e8bfe7917bfb', 'sadsadasd');
