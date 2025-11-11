@@ -1,13 +1,17 @@
+
+use('Somativa');
+
 function adicionarRespostaAvaliacao(reviewId, textoResposta) {
   try {
-      const productId = db.reviews.findOne({
-        reviewId: ObjectId(reviewId)
+      const review = db.reviews.findOne({
+        _id: ObjectId(reviewId)
       });
-      print(productId)
-      return;
-      const sellerId = db.product.findOne({
-        
+      
+      const product = db.products.findOne({
+        _id: review.productId
       });
+
+      const sellerId = product.sellerId
 
     const resultado = db.reviews.updateOne(
       { _id: ObjectId(reviewId) },
@@ -36,4 +40,4 @@ function adicionarRespostaAvaliacao(reviewId, textoResposta) {
   }
 }
 
-adicionarRespostaAvaliacao('690c95b16892e8bfe7917bfb', 'sadsadasd');
+adicionarRespostaAvaliacao('690c95b16892e8bfe7917bfc', 'Obrigado!!!');
