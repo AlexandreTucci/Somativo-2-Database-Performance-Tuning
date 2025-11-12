@@ -1,13 +1,15 @@
-// Conectar ao banco
+// Seleciona o banco de dados "Somativa"
 use('Somativa');
 
+// Remove coleções antigas (se existirem)
 db.products.drop();
 db.categories.drop();
 db.users.drop();
 db.orders.drop();
 db.reviews.drop();
 
-// --- USERS ---
+// USERS
+// Insere usuários com informações pessoais, endereço, localização e pontos de fidelidade
 db.users.insertMany([
   {
     name: "Alice Santos",
@@ -51,7 +53,8 @@ db.users.insertMany([
   }
 ]);
 
-// // --- CATEGORIES ---
+// CATEGORIES
+// Insere categorias principais sem hierarquia (parentId = null)
 db.categories.insertMany([
   { name: "Eletrônicos", parentId: null },
   { name: "Celulares", parentId: null },
@@ -60,10 +63,12 @@ db.categories.insertMany([
   { name: "Eletrodomésticos", parentId: null }
 ]);
 
-// --- PRODUCTS ---
-// Depois carregar as referências
+// PRODUCTS
+// Busca usuários e categorias para usar os _id nas referências
 const users = db.users.find().toArray();
 const categories = db.categories.find().toArray();
+
+// Insere produtos, relacionando categoria e vendedor
 db.products.insertMany([
   {
     name: "Smartphone X100",
@@ -71,8 +76,8 @@ db.products.insertMany([
     price: 2999.99,
     quantity: 10,
     location: { type: "Point", coordinates: [-46.63, -23.55] },
-    categoryId: categories[1]._id,
-    sellerId: users[1]._id,
+    categoryId: categories[1]._id, // Celulares
+    sellerId: users[1]._id, // Bruno
     promotions: []
   },
   {
@@ -81,8 +86,8 @@ db.products.insertMany([
     price: 4999.99,
     quantity: 5,
     location: { type: "Point", coordinates: [-49.27, -25.43] },
-    categoryId: categories[2]._id,
-    sellerId: users[0]._id,
+    categoryId: categories[2]._id, // Informática
+    sellerId: users[0]._id, // Alice
     promotions: []
   },
   {
@@ -91,8 +96,8 @@ db.products.insertMany([
     price: 89.90,
     quantity: 20,
     location: { type: "Point", coordinates: [-43.20, -22.90] },
-    categoryId: categories[3]._id,
-    sellerId: users[2]._id,
+    categoryId: categories[3]._id, // Livros
+    sellerId: users[2]._id, // Carla
     promotions: []
   },
   {
@@ -101,8 +106,8 @@ db.products.insertMany([
     price: 499.00,
     quantity: 15,
     location: { type: "Point", coordinates: [-51.23, -30.03] },
-    categoryId: categories[1]._id,
-    sellerId: users[3]._id,
+    categoryId: categories[1]._id, // Celulares
+    sellerId: users[3]._id, // Diego
     promotions: []
   },
   {
@@ -111,15 +116,17 @@ db.products.insertMany([
     price: 3999.00,
     quantity: 3,
     location: { type: "Point", coordinates: [-47.89, -15.78] },
-    categoryId: categories[4]._id,
-    sellerId: users[4]._id,
+    categoryId: categories[4]._id, // Eletrodomésticos
+    sellerId: users[4]._id, // Elisa
     promotions: []
   }
 ]);
 
-// // --- REVIEWS ---
+// REVIEWS
+// Busca produtos para referenciar nos reviews
 const products = db.products.find().toArray();
 
+// Insere avaliações com notas, comentários e respostas do vendedor
 db.reviews.insertMany([
   {
     productId: products[0]._id,
@@ -163,7 +170,8 @@ db.reviews.insertMany([
   }
 ]);
 
-// --- ORDERS ---
+// ORDERS
+// Insere pedidos com comprador, itens, status, total e pontos de fidelidade
 db.orders.insertMany([
   {
     buyerId: users[0]._id,
@@ -218,5 +226,4 @@ db.orders.insertMany([
   }
 ]);
 
-print("✅ Banco Somativa2DBT populado com sucesso!");
-
+print("Banco Somativa2DBT populado com sucesso!");

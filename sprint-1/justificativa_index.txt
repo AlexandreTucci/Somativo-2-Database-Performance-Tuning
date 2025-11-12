@@ -1,52 +1,52 @@
---- Índices recomendados
-1) Users
-- email: lookup único por login/recuperação (alta seletividade) -> único
-- location: buscas por proximidade -> 2dsphere
-Justificativa:
-- email: consultas frequentes por email (login, recuperação, verificação). Alta seletividade -> índice único.
-- location: necessário para buscas geoespaciais (produtos/usuários próximos).
+Justificativas dos índices criados no database Somativa
 
-2) Categories
-- name: busca por nome/categoria (poucas escritas, muitas leituras)
-Justificativa:
-- otimiza lookup por nome/categoria; cardinalidade média-baixa, mas operações de leitura frequentes.
+Coleção products
+1. { categoryId: 1 }
+Motivo: consultas que listam produtos por categoria são muito comuns, como mostrar todos os produtos da categoria “Celulares”.
+Benefício: acelera buscas com find({ categoryId: ... }), evitando varredura completa da coleção.
 
-3) Products
-- categoryId: filtrar produtos por categoria
-- sellerId: relatórios por vendedor / consultas do vendedor
-- location: geolocalização para buscar por proximidade
-- text index em name + description: buscas de texto completo
-- compound (categoryId, price): filtrar por categoria e ordenar/filtrar por preço eficientemente
-Justificativa:
-- categoryId e sellerId: consultas e agregações por categoria/vendedor (muito usadas em listagens e relatórios).
-- 2dsphere: busca por proximidade é requisito funcional (Sprint 2).
-- text: pesquisa por termos em nome/descrição.
-- compound categoryId+price: melhora filtros por categoria com ordenação/intervalos de preço.
+2. { sellerId: 1 }
+Motivo: relatórios ou dashboards de vendedores precisam listar apenas os produtos de um determinado vendedor.
+Benefício: facilita consultas e agregações por vendedor.
 
-4) Reviews
-- productId: recuperar todas as avaliações de um produto
-- userId: histórico do usuário
-- productId + rating: agregações de média por produto
-Justificativa:
-- productId: consulta frequente (mostrar avaliações em página de produto) e agregações (média).
-- userId: histórico e moderação.
-- combinação productId+rating melhora agregações que filtram por produto e ordenam por rating/date.
+3. { price: 1 }
+Motivo: ordenações por preço são frequentes, como ordenar do menor ao maior preço.
+Benefício: evita sort em memória e permite que o MongoDB use o índice para ordenar rapidamente.
 
-5) Orders
-- buyerId + date: histórico de pedidos por comprador (ordenado por data)
-- status + date: filas/monitoramento por status em janelas temporais
-- items.productId: agregações para total de vendas por produto/categoria (items é array)
-Justificativa:
-- buyerId+date: uso comum em histórico de compras, UI que mostra pedidos recentes primeiro.
-- status+date: operações de suporte/monitoramento que listam pedidos por status e tempo.
-- items.productId: necessário para agregações que unem orders -> produtos (vendas por produto/categoria).
+4. { name: "text", description: "text" }
+Motivo: suporte a buscas por palavras-chave no nome ou descrição dos produtos.
+Benefício: permite buscas textuais eficientes, como db.products.find({ $text: { $search: "fone bluetooth" } }).
 
-6) Complementares para relatórios cruzando collections
-- products.sellerId já criado; caso usemos $lookup com products a partir de orders/items, garante join rápido
-- Se uso intenso de lookup orders.items.productId -> products._id, manter produtos com índice padrão _id (implícito) e idx_orders_items_productId.
+5. { location: "2dsphere" }
+Motivo: consultas geoespaciais, como produtos próximos a uma localização.
+Benefício: habilita operações $near e $geoWithin para buscas rápidas por localização.
 
-Observações sobre performance e manutenção:
-- Evitar índices desnecessários: cada índice custa em escrita e armazenamento.
-- Monitorar com db.collection.getIndexes() e analisar explain() em queries pesadas.
-- Para campos com muitas atualizações (ex: quantity), preferir evitar índices que não sejam necessários para consultas frequentes.
-- Para buscas geográficas com filtros adicionais (categoria, preço), considerar índices compostos com {location: "2dsphere", categoryId:1} se a maioria das queries usar ambos (MongoDB exige que 2dsphere seja o prefixo em alguns casos de índice composto; revisar padrão de consultas antes de criar).
+6. { "promotions.inicio": 1, "promotions.fim": 1 }
+Motivo: encontrar promoções ativas em um intervalo de tempo.
+Benefício: otimiza buscas de promoções vigentes com base na data atual.
+
+Coleção reviews
+1. { productId: 1, rating: -1 }
+Motivo: mostrar avaliações de um produto, geralmente ordenadas por nota.
+Benefício: acelera buscas por produto e ordenação direta por rating.
+
+2. { userId: 1 }
+Motivo: usuários podem consultar suas próprias avaliações.
+Benefício: torna rápidas consultas de avaliações por usuário.
+
+Coleção orders
+1. { buyerId: 1, date: -1 }
+Motivo: usuários frequentemente consultam seu histórico de pedidos, ordenado do mais recente ao mais antigo.
+Benefício: acelera buscas de pedidos do usuário em ordem cronológica inversa.
+
+2. { "items.productId": 1 }
+Motivo: verificar vendas de um produto específico.
+Benefício: melhora consultas de relatórios de vendas por produto.
+
+3. { status: 1, date: -1 }
+Motivo: filtrar pedidos por status e ordenar por data.
+Benefício: torna eficiente consultas administrativas e relatórios operacionais.
+
+4. { "items.productId": 1, date: -1 }
+Motivo: usado quando o sistema filtra pedidos por produto e período, como vendas do produto X nos últimos 30 dias.
+Benefício: filtra e ordena em um único índice composto, sem custo extra de ordenação.

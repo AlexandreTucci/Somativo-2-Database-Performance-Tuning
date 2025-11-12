@@ -1,15 +1,17 @@
+// Relatórios de vendas por vendedor (incluindo quantidade vendida e receita total)
+
 use('Somativa');
 
 db.orders.aggregate([
-  // 1️⃣ Considera apenas pedidos concluídos
+  // Considera apenas pedidos concluídos
   {
     $match: { status: { $in: ["completed", "entregue"] } }
   },
 
-  // 2️⃣ "Explode" o array de itens
+  // "Explode" o array de itens
   { $unwind: "$items" },
 
-  // 3️⃣ Associa o produto de cada item (para pegar o vendedor)
+  // Associa o produto de cada item (para pegar o vendedor)
   {
     $lookup: {
       from: "products",
@@ -20,7 +22,7 @@ db.orders.aggregate([
   },
   { $unwind: "$produto" },
 
-  // 4️⃣ Junta com o usuário vendedor
+  // Junta com o usuário vendedor
   {
     $lookup: {
       from: "users",
@@ -31,7 +33,7 @@ db.orders.aggregate([
   },
   { $unwind: "$vendedor" },
 
-  // 5️⃣ Agrupa os dados por vendedor
+  // Agrupa os dados por vendedor
   {
     $group: {
       _id: "$vendedor._id",
@@ -41,10 +43,10 @@ db.orders.aggregate([
     }
   },
 
-  // 6️⃣ Ordena por maior receita
+  // Ordena por maior receita
   { $sort: { receitaTotal: -1 } },
 
-  // 7️⃣ Formata o resultado
+  // Formata o resultado
   {
     $project: {
       _id: 0,
