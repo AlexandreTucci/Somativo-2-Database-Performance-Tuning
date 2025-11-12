@@ -1,3 +1,4 @@
+// Vendedores podem responder avaliações recebidas
 
 use('Somativa');
 

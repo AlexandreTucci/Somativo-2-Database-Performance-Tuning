@@ -27,4 +27,4 @@ db.users.updateOne(
   { $inc: { loyaltyPoints: -buyer.loyaltyPoints + pontosGanhos } }
 );
 
-print(`✅ Pedido criado! ${pontosGanhos} pontos adicionados e ${buyer.loyaltyPoints} usados.`);
+print(`Pedido criado! ${pontosGanhos} pontos adicionados e ${buyer.loyaltyPoints} usados.`);

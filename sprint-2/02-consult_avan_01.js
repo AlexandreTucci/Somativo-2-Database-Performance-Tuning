@@ -1,3 +1,8 @@
+// Usuários e produtos têm localização geográfica (latitude/longitude)
+// Os usuários podem buscar produtos por proximidade, definindo um raio de busca
+// Crie índice geoespacial para otimizar essas buscas
+// Buscar produtos próximos ao usuário dentro de um raio X (geospatial query)
+
 use('Somativa');
 
 function getProductsByLocation(raioKm, userId){
