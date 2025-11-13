@@ -5,7 +5,7 @@ use('Somativa');
 db.orders.aggregate([
   // Considera apenas pedidos concluídos
   {
-    $match: { status: { $in: ["completed", "entregue"] } }
+    $match: { status: { $in: ["completed", "Entregue"] } }
   },
 
   // "Explode" o array de itens

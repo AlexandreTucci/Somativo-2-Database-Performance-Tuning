@@ -26,5 +26,5 @@ function getProductsByLocation(raioKm, userId) {
 }
 
 // Chamada da função: busca produtos até 10 km do usuário especificado
-getProductsByLocation(10, '690c95b16892e8bfe7917bec');
+getProductsByLocation(10, '690a92fc74fa9727781cec30');
 

@@ -3,13 +3,13 @@
 use('Somativa');
 
 // ID do comprador
-const buyerId = ObjectId("690c95b16892e8bfe7917bec");
+const buyerId = ObjectId("690a92fc74fa9727781cec30");
 
 // Busca o comprador no banco
 const buyer = db.users.findOne({ _id: buyerId }); 
 
 // Busca o produto que será comprado
-const product = db.products.findOne({ name: 'Tênis Running' });
+const product = db.products.findOne({ name: 'Smartphone X100' });
 
 // Calcula o valor total do produto
 const totalProduto = product.price;
